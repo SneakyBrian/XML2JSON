@@ -1,0 +1,29 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XML2JSON", "XML2JSON\XML2JSON.csproj", "{2008DA79-F037-48D0-BF46-3A46E4D1F3CF}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{032A1C6C-21BD-4D92-872B-59BB69B5888F}"
+	ProjectSection(SolutionItems) = preProject
+		.nuget\NuGet.Config = .nuget\NuGet.Config
+		.nuget\NuGet.exe = .nuget\NuGet.exe
+		.nuget\NuGet.targets = .nuget\NuGet.targets
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SampleData", "SampleData", "{85C2FD8E-5035-4C9D-A081-558664F5EFFC}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x86 = Debug|x86
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{2008DA79-F037-48D0-BF46-3A46E4D1F3CF}.Debug|x86.ActiveCfg = Debug|x86
+		{2008DA79-F037-48D0-BF46-3A46E4D1F3CF}.Debug|x86.Build.0 = Debug|x86
+		{2008DA79-F037-48D0-BF46-3A46E4D1F3CF}.Release|x86.ActiveCfg = Release|x86
+		{2008DA79-F037-48D0-BF46-3A46E4D1F3CF}.Release|x86.Build.0 = Release|x86
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
