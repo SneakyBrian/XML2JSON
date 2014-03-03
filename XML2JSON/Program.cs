@@ -1,9 +1,7 @@
 ﻿using System.IO;
-using System.Linq;
-using System.Text.RegularExpressions;
-using System.Xml;
-using Newtonsoft.Json;
-using Formatting = Newtonsoft.Json.Formatting;
+using XML2JSON.Core;
+using System;
+using System.Reflection;
 
 namespace XML2JSON
 {
@@ -11,40 +9,42 @@ namespace XML2JSON
     {
         static void Main(string[] args)
         {
+            Console.WriteLine(Assembly.GetExecutingAssembly().FullName);
+
             var inputXml = args[0];
             var outputJson = args[1];
 
-            var doc = new XmlDocument();
-            doc.Load(inputXml);
+            Console.WriteLine("input xml: {0}", inputXml);
+            Console.WriteLine("output json: {0}", outputJson);
 
-            //strip comments from xml
-            var comments = doc.SelectNodes("//comment()");
+            string xml;
 
-            if (comments != null)
+            using (var inputFileStream = File.OpenRead(inputXml))
             {
-                foreach (var node in comments.Cast<XmlNode>())
+                using (var inputStreamReader = new StreamReader(inputFileStream))
                 {
-                    if (node.ParentNode != null)
-                        node.ParentNode.RemoveChild(node);
+                    xml = inputStreamReader.ReadToEnd();
                 }
             }
 
-            var rawJsonText = JsonConvert.SerializeXmlNode(doc.DocumentElement, Formatting.Indented);
+            Console.WriteLine("Loaded input xml from '{0}'", inputXml);
 
-            //strip the @ and # characters
-            var strippedJsonText = Regex.Replace(rawJsonText, "(?<=\")(@)(?!.*\":\\s )", string.Empty, RegexOptions.IgnoreCase);
-            strippedJsonText = Regex.Replace(strippedJsonText, "(?<=\")(#)(?!.*\":\\s )", string.Empty, RegexOptions.IgnoreCase);
+            var json = Converter.ConvertToJson(xml);
+
+            Console.WriteLine("Converted xml to json");
 
             //save out
             using (var outputFileStream = File.Open(outputJson, FileMode.Create, FileAccess.Write))
             {
                 using (var outputStreamWriter = new StreamWriter(outputFileStream))
                 {
-                    outputStreamWriter.Write(strippedJsonText);
+                    outputStreamWriter.Write(json);
                     outputStreamWriter.Flush();
                     outputStreamWriter.Close();
                 }
             }
+
+            Console.WriteLine("Saved output json to '{0}'", outputJson);
         }
     }
 }
