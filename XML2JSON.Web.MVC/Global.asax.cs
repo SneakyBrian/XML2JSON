@@ -6,6 +6,7 @@ using System.Web.Http;
 using System.Web.Mvc;
 using System.Web.Optimization;
 using System.Web.Routing;
+using XML2JSON.Web.MVC.Formatters;
 
 namespace XML2JSON.Web.MVC
 {
@@ -22,6 +23,8 @@ namespace XML2JSON.Web.MVC
             FilterConfig.RegisterGlobalFilters(GlobalFilters.Filters);
             RouteConfig.RegisterRoutes(RouteTable.Routes);
             BundleConfig.RegisterBundles(BundleTable.Bundles);
+
+            GlobalConfiguration.Configuration.Formatters.Insert(0, new TextMediaTypeFormatter());
         }
     }
 }
