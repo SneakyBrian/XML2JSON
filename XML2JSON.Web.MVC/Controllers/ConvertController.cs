@@ -5,7 +5,6 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Http;
-using WebAPI.OutputCache;
 using XML2JSON.Core;
 
 namespace XML2JSON.Web.MVC.Controllers
@@ -18,7 +17,6 @@ namespace XML2JSON.Web.MVC.Controllers
         /// <param name="uri">uri of xml data</param>
         /// <param name="callback">javascript callback for jsonp usage. optional</param>
         /// <returns>json encoded data</returns>
-        [CacheOutput(ClientTimeSpan = 900, ServerTimeSpan = 900)]
         public async Task<HttpResponseMessage> Get(string uri, string callback = null)
         {
             using (HttpClient httpClient = new HttpClient())
