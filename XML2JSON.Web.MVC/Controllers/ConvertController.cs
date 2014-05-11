@@ -57,6 +57,12 @@ namespace XML2JSON.Web.MVC.Controllers
                     Cache.Add(uri, jsonCache, DateTimeOffset.Now.AddMinutes(CACHE_DURATION_MINS));
                 }
             }
+            //check If-None-Match header etag to see if it matches our data hash
+            else if (Request.Headers.IfNoneMatch.Count(etag => etag.Tag == String.Concat("\"", jsonCache.Hash, "\"")) > 0)
+            {
+                 //if it does return 304 Not Modified
+                return new HttpResponseMessage(HttpStatusCode.NotModified);
+            }
 
             string result;
 
@@ -75,7 +81,7 @@ namespace XML2JSON.Web.MVC.Controllers
             };
 
             //tell the client to cache for CACHE_DURATION_MINS
-            responseMessage.Headers.CacheControl = new CacheControlHeaderValue()
+            responseMessage.Headers.CacheControl = new CacheControlHeaderValue
             {
                 MaxAge = TimeSpan.FromMinutes(CACHE_DURATION_MINS),
                 NoCache = false,
