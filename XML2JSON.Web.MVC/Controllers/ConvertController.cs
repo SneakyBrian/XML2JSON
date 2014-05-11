@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Runtime.Caching;
 using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Cors;
@@ -12,6 +14,17 @@ namespace XML2JSON.Web.MVC.Controllers
 {
     public class ConvertController : ApiController
     {
+        private const int CACHE_DURATION_MINS = 15;
+
+        private static ObjectCache Cache
+        {
+            get
+            {
+                return MemoryCache.Default;
+            }
+        }
+
+
         /// <summary>
         /// Gets the xml data at the specified uri and converts it to json before returning it
         /// </summary>
@@ -21,29 +34,51 @@ namespace XML2JSON.Web.MVC.Controllers
         [EnableCors(origins: "*", headers: "*", methods: "*")]
         public async Task<HttpResponseMessage> Get(string uri, string callback = null)
         {
-            using (HttpClient httpClient = new HttpClient())
+            //see if we have the result cached
+            var json = Cache.Get(uri) as string;
+
+            //if we don't..
+            if (string.IsNullOrWhiteSpace(json))
             {
-                var response = await httpClient.GetAsync(uri);
-                var xml = await response.Content.ReadAsStringAsync();
-
-                var json = await Converter.ConvertToJsonAsync(xml);
-
-                string result;
-
-                if (string.IsNullOrWhiteSpace(callback))
+                //download it
+                using (HttpClient httpClient = new HttpClient())
                 {
-                    result = json;
+                    var response = await httpClient.GetAsync(uri);
+                    var xml = await response.Content.ReadAsStringAsync();
+
+                    //convert it...
+                    json = await Converter.ConvertToJsonAsync(xml);
+
+                    //cache it...
+                    Cache.Add(uri, json, DateTimeOffset.Now.AddMinutes(CACHE_DURATION_MINS));
                 }
-                else
-                {
-                    result = callback + "(" + json + ");";
-                }
-
-                return new HttpResponseMessage 
-                {
-                    Content = new StringContent(result)
-                };
             }
+
+            string result;
+
+            if (string.IsNullOrWhiteSpace(callback))
+            {
+                result = json;
+            }
+            else
+            {
+                result = callback + "(" + json + ");";
+            }
+
+            var responseMessage = new HttpResponseMessage
+            {
+                Content = new StringContent(result)               
+            };
+
+            //tell the client to cache for CACHE_DURATION_MINS
+            responseMessage.Headers.CacheControl = new CacheControlHeaderValue()
+            {
+                MaxAge = TimeSpan.FromMinutes(CACHE_DURATION_MINS),
+                NoCache = false,
+                Private = false
+            };
+
+            return responseMessage;        
         }
 
         /// <summary>
