@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Cors;
 using XML2JSON.Core;
+using XML2JSON.Web.MVC.Models.Caching;
 
 namespace XML2JSON.Web.MVC.Controllers
 {
@@ -31,14 +32,15 @@ namespace XML2JSON.Web.MVC.Controllers
         /// <param name="uri">uri of xml data</param>
         /// <param name="callback">javascript callback for jsonp usage. optional</param>
         /// <returns>json encoded data</returns>
+        /// <remarks>test client url: http://jsfiddle.net/s7UGv/ </remarks>
         [EnableCors(origins: "*", headers: "*", methods: "*")]
         public async Task<HttpResponseMessage> Get(string uri, string callback = null)
         {
             //see if we have the result cached
-            var json = Cache.Get(uri) as string;
+            var jsonCache = Cache.Get(uri) as JsonCacheItem;
 
             //if we don't..
-            if (string.IsNullOrWhiteSpace(json))
+            if (jsonCache == null)
             {
                 //download it
                 using (HttpClient httpClient = new HttpClient())
@@ -47,10 +49,12 @@ namespace XML2JSON.Web.MVC.Controllers
                     var xml = await response.Content.ReadAsStringAsync();
 
                     //convert it...
-                    json = await Converter.ConvertToJsonAsync(xml);
+                    var json = await Converter.ConvertToJsonAsync(xml);
+
+                    jsonCache = new JsonCacheItem(json);
 
                     //cache it...
-                    Cache.Add(uri, json, DateTimeOffset.Now.AddMinutes(CACHE_DURATION_MINS));
+                    Cache.Add(uri, jsonCache, DateTimeOffset.Now.AddMinutes(CACHE_DURATION_MINS));
                 }
             }
 
@@ -58,11 +62,11 @@ namespace XML2JSON.Web.MVC.Controllers
 
             if (string.IsNullOrWhiteSpace(callback))
             {
-                result = json;
+                result = jsonCache.Data;
             }
             else
             {
-                result = callback + "(" + json + ");";
+                result = callback + "(" + jsonCache.Data + ");";
             }
 
             var responseMessage = new HttpResponseMessage
@@ -75,8 +79,10 @@ namespace XML2JSON.Web.MVC.Controllers
             {
                 MaxAge = TimeSpan.FromMinutes(CACHE_DURATION_MINS),
                 NoCache = false,
-                Private = false
+                Private = false                
             };
+
+            responseMessage.Headers.ETag = new EntityTagHeaderValue(String.Concat("\"", jsonCache.Hash, "\""));
 
             return responseMessage;        
         }
