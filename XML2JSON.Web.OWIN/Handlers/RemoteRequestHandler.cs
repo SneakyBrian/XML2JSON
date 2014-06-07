@@ -26,12 +26,12 @@ namespace XML2JSON.Web.OWIN.Handlers
         /// <returns>Task</returns>
         public async Task HandleRequest(IOwinContext context)
         {
-            var uri = context.Request.Query["uri"];
+            var uri = HttpUtility.UrlDecode(context.Request.Query["uri"]);
             var callback = context.Request.Query["callback"];
             var xml = string.Empty;
 
             //see if we have the result cached
-            var jsonCache = Cache.Get(uri) as JsonCacheItem;
+            var jsonCache = Cache.Get(HttpUtility.UrlEncode(uri)) as JsonCacheItem;
 
             if (jsonCache == null)
             {
@@ -46,7 +46,7 @@ namespace XML2JSON.Web.OWIN.Handlers
                 jsonCache = new JsonCacheItem(json);
 
                 //cache it...
-                Cache.Add(uri, jsonCache, DateTimeOffset.Now.AddMinutes(CACHE_DURATION_MINS));
+                Cache.Add(HttpUtility.UrlEncode(uri), jsonCache, DateTimeOffset.Now.AddMinutes(CACHE_DURATION_MINS));
             }
             //check If-None-Match header etag to see if it matches our data hash
             else if (context.Request.Headers["If-None-Match"] == String.Concat("\"", jsonCache.Hash, "\""))
