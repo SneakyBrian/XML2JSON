@@ -16,6 +16,14 @@ namespace XML2JSON.Web.OWIN.Handlers
     {
         private const int CACHE_DURATION_MINS = 15;
 
+        /// <summary>
+        /// Handle request to convert data from remote url
+        /// </summary>
+        /// <remarks>
+        /// Example client: http://jsfiddle.net/s7UGv/4/
+        /// </remarks>
+        /// <param name="context">context of request/response</param>
+        /// <returns>Task</returns>
         public async Task HandleRequest(IOwinContext context)
         {
             var uri = context.Request.Query["uri"];
