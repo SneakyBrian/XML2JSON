@@ -40,6 +40,10 @@ namespace XML2JSON.Core
             var strippedJsonText = Regex.Replace(rawJsonText, "(?<=\")(@)(?!.*\":\\s )", string.Empty, RegexOptions.IgnoreCase);
             strippedJsonText = Regex.Replace(strippedJsonText, "(?<=\")(#)(?!.*\":\\s )", string.Empty, RegexOptions.IgnoreCase);
 
+            // unquote numbers and booleans
+            strippedJsonText = Regex.Replace(strippedJsonText, "\\\"([\\d\\.]+)\\\"", "$1", RegexOptions.IgnoreCase);
+            strippedJsonText = Regex.Replace(strippedJsonText, "\\\"(true|false)\\\"", "$1", RegexOptions.IgnoreCase);
+            
             return strippedJsonText;
         }
 
